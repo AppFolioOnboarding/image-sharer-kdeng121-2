@@ -11,11 +11,10 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
       post images_path,
            params: { image: { url: 'http://test.com' } }
     end
-    added_url = Image.last.url
-    assert_equal 'http://test.com', added_url
+    image = Image.last
+    assert_equal 'http://test.com', image.url
     assert_response :redirect
-    follow_redirect!
-    assert_response :ok
+    assert_redirected_to image_path(image.id)
   end
 
   test 'Create action renders new page on invalid URL input' do

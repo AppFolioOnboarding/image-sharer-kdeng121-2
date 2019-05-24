@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'nokogiri'
 class ApplicationControllerTest < ActionDispatch::IntegrationTest
   test 'New action displays image URL submission form' do
     get new_image_path
@@ -30,5 +31,22 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_select 'h1', 'Your image'
     assert_select 'img[src="http://test.com"]'
+  end
+
+  test 'Index action displays list of images, with most recently added first' do
+    Image.destroy_all
+    Image.create!(url: 'http://test1.com',
+                  created_at: Time.zone.parse('Tue, 18 Apr 2017 01:00:00 EDT -04:00'))
+    Image.create!(url: 'http://test3.com',
+                  created_at: Time.zone.parse('Tue, 18 Apr 2017 03:00:00 EDT -04:00'))
+    Image.create!(url: 'http://test2.com',
+                  created_at: Time.zone.parse('Tue, 18 Apr 2017 02:00:00 EDT -04:00'))
+    get images_path
+    assert_select 'h1', 'All Images'
+    assert_select 'img' do |img|
+      assert_equal 'http://test3.com', img[0].attribute('src').value
+      assert_equal 'http://test2.com', img[1].attribute('src').value
+      assert_equal 'http://test1.com', img[2].attribute('src').value
+    end
   end
 end

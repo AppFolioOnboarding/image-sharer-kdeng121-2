@@ -8,7 +8,9 @@
   <% @images.each do |image| %>
     <tr>
       <td><%= image_tag image.url, class:'max-dimensions' %></td>
-      <td><%= image.tag_list %></td>
+      <td class="js-tag">
+        <%= image.tag_list %>
+      </td>
     </tr>
   <% end %>
 </table>

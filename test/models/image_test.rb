@@ -17,4 +17,10 @@ class ImageTest < ActiveSupport::TestCase
     image = Image.new(url: 'http://test.com')
     assert image.valid?
   end
+
+  test 'Accepts tags' do
+    image = Image.new(url: 'http://test.com', tag_list: %w[tag1 tag2])
+    assert image.valid?
+    assert_equal %w[tag1 tag2], image.tag_list
+  end
 end

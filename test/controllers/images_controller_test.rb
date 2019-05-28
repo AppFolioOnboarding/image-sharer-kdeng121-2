@@ -27,12 +27,16 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'Show action displays the image and corresponding tags' do
-    image = Image.create!(url: 'http://test.com', tag_list: %w[tagtest1 tagtest2])
+    image = Image.create!(url: 'http://test.com', tag_list: 'tagtest1, tagtest2')
     get image_path(image.id)
     assert_response :ok
     assert_select 'h1', 'Your image'
+    assert_select 'strong', 'Tags:'
     assert_select 'img[src="http://test.com"]'
-    assert_select 'p', 'Tags: tagtest1, tagtest2'
+    assert_select '.js-tag' do |tag|
+      assert_equal 'tagtest1', tag[0].children[0].text.strip
+      assert_equal 'tagtest2', tag[1].children[0].text.strip
+    end
   end
 
   test 'Index action displays list of images, with most recently added first' do

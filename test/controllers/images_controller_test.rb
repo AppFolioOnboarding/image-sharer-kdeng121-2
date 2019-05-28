@@ -1,5 +1,8 @@
 require 'test_helper'
 require 'nokogiri'
+
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Metrics/ClassLength
 class ApplicationControllerTest < ActionDispatch::IntegrationTest
   test 'New action displays image URL submission form' do
     get new_image_path
@@ -62,6 +65,11 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
       assert_equal 'tagtest21 tagtest22', imgtags[1].children[0].text.strip
       assert_nil imgtags[2]
     end
+    assert_select 'form' do |form|
+      assert_equal 'Delete', form[0].children[1].attribute('value').value
+      assert_equal 'Delete', form[1].children[1].attribute('value').value
+      assert_equal 'Delete', form[2].children[1].attribute('value').value
+    end
   end
 
   test 'Tagged action displays a filtered list of only images with selected tag' do
@@ -84,4 +92,28 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
       assert_equal 2, img.length
     end
   end
+
+  test 'Destroy action removes image from homepage and database' do
+    Image.destroy_all
+    image = Image.create!(url: 'http://test1.com')
+    Image.create!(url: 'http://test2.com')
+    delete image_path(image.id)
+    assert_response :redirect
+    assert_equal 1, Image.count
+    assert_equal 'http://test2.com', Image.first.url
+  end
+
+  test 'Destroy action returns error when image is already deleted' do
+    Image.destroy_all
+    Image.create!(url: 'http://test1.com')
+    Image.create!(url: 'http://test2.com')
+    assert_no_difference 'Image.count' do
+      delete image_path(-1)
+    end
+    assert_response :redirect
+    get images_path
+    assert_select '.notice', 'Image does not exist'
+  end
 end
+# rubocop:enable Metrics/BlockLength
+# rubocop:enable Metrics/ClassLength

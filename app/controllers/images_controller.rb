@@ -24,6 +24,16 @@ class ImagesController < ApplicationController
     @image = Image.find(params[:id])
   end
 
+  def destroy
+    begin
+      @image = Image.find(params[:id])
+      @image.destroy
+    rescue ActiveRecord::RecordNotFound
+      flash[:notice] = 'Image does not exist'
+    end
+    redirect_to images_path
+  end
+
   private
 
   def image_params
